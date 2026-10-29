@@ -1,16 +1,14 @@
 <?php
 /**
- * Plugin Name:       NodeThemes Analytics AI - Privacy-First Analytics with AI Insights
- * Plugin URI:        https://nodethemes.com/
+ * Plugin Name:       NodeThemes Analytics AI
  * Description:       Matomo-style website analytics inside WordPress: visitors, pages, sources, campaigns, AI-assistant referrals, devices, GeoIP locations, real-time, visits log, goals, WooCommerce revenue, segments, Web Vitals and more. Cookieless, GDPR-friendly and built for busy sites. Bring your own OpenAI / Claude / Gemini API key for AI summaries.
- * Version:           2.1.1
+ * Version:           2.1.5
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            NodeThemes
  * Author URI:        https://nodethemes.com/
  * License:           GPL-2.0-or-later
  * Text Domain:       nodethemes-analytics-ai
- * Update URI:        https://nodethemes.com/nodethemes-analytics-ai
  *
  * @package NodeThemes_Analytics_AI
  */
@@ -23,7 +21,7 @@ if ( defined( 'NTAA_VERSION' ) ) {
 	return;
 }
 
-define( 'NTAA_VERSION', '2.1.1' );
+define( 'NTAA_VERSION', '2.1.5' );
 define( 'NTAA_DB_VERSION', '2.2' );
 define( 'NTAA_FILE', __FILE__ );
 define( 'NTAA_DIR', plugin_dir_path( __FILE__ ) );
@@ -35,10 +33,6 @@ foreach ( array( 'settings', 'pro-gate', 'mmdb', 'ua', 'hit', 'geoip', 'db', 'se
 	require_once NTAA_DIR . 'includes/class-ntaa-' . $ntaa_f . '.php';
 }
 unset( $ntaa_f );
-
-// Free updates from nodethemes.com.
-require_once NTAA_DIR . 'includes/updater.php';
-NTAA_Free_Updater::boot( NTAA_FILE, NTAA_VERSION, 'https://nodethemes.com/' );
 
 register_activation_hook( __FILE__, array( 'NTAA_DB', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'NTAA_DB', 'deactivate' ) );

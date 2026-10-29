@@ -60,9 +60,6 @@ class NTAA_DB {
 		NTAA_Settings::sync_caps();
 		NTAA_Settings::write_runtime();
 		NTAA_Cron::schedule();
-		if ( 'off' !== NTAA_Settings::get( 'geoip_source' ) && ! NTAA_GeoIP::files() ) {
-			wp_schedule_single_event( time() + 30, 'ntaa_geoip_update' );
-		}
 	}
 
 	/**
