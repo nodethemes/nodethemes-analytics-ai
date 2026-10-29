@@ -219,12 +219,7 @@ class NTAA_Settings {
 		foreach ( array( 'enabled', 'cookieless', 'respect_dnt', 'trust_proxy', 'track_outbound', 'track_downloads', 'track_forms', 'track_spa', 'track_vitals', 'track_search', 'track_ecommerce', 'track_bots', 'queue', 'report_enabled', 'report_ai' ) as $k ) {
 			$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 		}
-		// The fast endpoint can only be switched on together with the queue, and only after a successful self-test.
-		$out['fast_endpoint'] = ( ! empty( $in['fast_endpoint'] ) && $out['queue'] ) ? 1 : 0;
-		if ( $out['fast_endpoint'] && ! NTAA_Tracker::fast_endpoint_works() ) {
-			$out['fast_endpoint'] = 0;
-			add_settings_error( self::OPTION, 'ntaa_fast', __( 'The fast tracking endpoint could not be reached on this server, so it stays off. The queue is still used.', 'nodethemes-analytics-ai' ), 'warning' );
-		}
+		$out['fast_endpoint'] = 0; // This edition always uses the WordPress REST API endpoint.
 
 		$roles                 = isset( $in['exclude_roles'] ) && is_array( $in['exclude_roles'] ) ? array_map( 'sanitize_key', $in['exclude_roles'] ) : array();
 		$out['exclude_roles']  = array_values( $roles );

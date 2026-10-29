@@ -583,7 +583,6 @@ class NTAA_Admin {
 						<p class="description"><?php esc_html_e( 'Reports are pre-calculated once per day (archiving), so the dashboard stays fast even with millions of visits. Only today is read from the raw log.', 'nodethemes-analytics-ai' ); ?></p>
 						<?php self::checkbox( 'queue', __( 'High-traffic mode: store hits in a queue and process them in the background', 'nodethemes-analytics-ai' ), __( 'Each hit only needs one quick database insert; a background job (every minute) does the rest. Recommended from about 50,000 pageviews per day.', 'nodethemes-analytics-ai' ) ); ?>
 						<div data-depends="<?php echo esc_attr( self::field_name( 'queue' ) ); ?>=1">
-							<?php self::checkbox( 'fast_endpoint', __( 'Use the lightweight tracking endpoint (track.php) instead of the WordPress REST API', 'nodethemes-analytics-ai' ), __( 'Skips loading plugins and the theme for every hit — about 5–10× less server work. It is tested when you save; if your server blocks it, it stays off.', 'nodethemes-analytics-ai' ) ); ?>
 							<p>
 								<?php
 								/* translators: %s: number */

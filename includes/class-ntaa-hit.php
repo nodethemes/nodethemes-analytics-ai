@@ -3,7 +3,7 @@
  * Receives tracking requests and turns them into clean, privacy-safe "hits".
  *
  * This class deliberately avoids WordPress functions that are not loaded in SHORTINIT mode,
- * so the same code runs in the normal REST endpoint and in the fast endpoint (track.php).
+ * so the same code runs for every tracking request.
  * The IP address is used here only (exclusions, visitor hash, GeoIP) and is never stored.
  *
  * @package NodeThemes_Analytics_AI

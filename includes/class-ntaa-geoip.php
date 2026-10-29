@@ -358,8 +358,8 @@ class NTAA_GeoIP {
 	 */
 	public static function maybe_monthly_update() {
 		$src = (string) NTAA_Settings::get( 'geoip_source' );
-		if ( in_array( $src, array( 'off', 'upload' ), true ) ) {
-			return;
+		if ( in_array( $src, array( 'off', 'upload' ), true ) || ! get_option( 'ntaa_geoip_optin' ) ) {
+			return; // Never contacts a GeoIP provider until the site owner clicked "Download now" once.
 		}
 		$s = self::state();
 		if ( ! self::files() || $s['source'] !== $src || ( time() - (int) $s['updated'] ) > 32 * DAY_IN_SECONDS ) {
@@ -381,6 +381,7 @@ class NTAA_GeoIP {
 			wp_die( esc_html__( 'You do not have permission to do this.', 'nodethemes-analytics-ai' ), 403 );
 		}
 		check_admin_referer( 'ntaa_geoip' );
+		update_option( 'ntaa_geoip_optin', 1, false );
 		$r = self::update();
 		set_transient( 'ntaa_geo_msg_' . get_current_user_id(), is_wp_error( $r ) ? array( 'error', $r->get_error_message() ) : array( 'success', __( 'GeoIP database downloaded and activated.', 'nodethemes-analytics-ai' ) ), 120 );
 		wp_safe_redirect( admin_url( 'admin.php?page=ntaa-settings#geoip' ) );

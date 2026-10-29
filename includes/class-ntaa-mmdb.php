@@ -342,7 +342,7 @@ class NTAA_MMDB {
 			case 13: // End marker.
 				return array( null, $offset );
 		}
-		throw new Exception( 'Unknown data type ' . $type . ' in MaxMind DB.' );
+		throw new Exception( 'Unknown data type ' . (int) $type . ' in MaxMind DB.' );
 	}
 
 	/**

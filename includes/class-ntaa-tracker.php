@@ -4,8 +4,8 @@
  *
  * Two ways a hit is stored:
  * - Direct (default): the REST endpoint processes every hit immediately.
- * - High-traffic mode: hits are only appended to a queue table (one fast INSERT, optionally through
- *   the lightweight track.php endpoint) and processed in batches every minute by cron.
+ * - High-traffic mode: hits are only appended to a queue table (one fast INSERT) and
+ *   processed in batches every minute by cron.
  *
  * @package NodeThemes_Analytics_AI
  */
@@ -61,10 +61,6 @@ class NTAA_Tracker {
 	 * @return string
 	 */
 	public static function endpoint() {
-		$rt = NTAA_Settings::runtime();
-		if ( ! empty( $rt['queue'] ) && ! empty( $rt['fast'] ) ) {
-			return NTAA_URL . 'track.php';
-		}
 		return esc_url_raw( rest_url( 'ntaa/v1/collect' ) );
 	}
 
@@ -241,23 +237,6 @@ class NTAA_Tracker {
 		update_option( 'ntaa_queue_backlog', $backlog, false );
 		$wpdb->query( "SELECT RELEASE_LOCK('ntaa_queue')" ); // phpcs:ignore WordPress.DB
 		return $done;
-	}
-
-	/**
-	 * Does the fast endpoint answer on this server?
-	 *
-	 * @return bool
-	 */
-	public static function fast_endpoint_works() {
-		$res = wp_remote_post(
-			NTAA_URL . 'track.php?selftest=1',
-			array(
-				'timeout'   => 10,
-				'body'      => '{}',
-				'sslverify' => apply_filters( 'https_local_ssl_verify', false ),
-			)
-		);
-		return ! is_wp_error( $res ) && 200 === (int) wp_remote_retrieve_response_code( $res ) && false !== strpos( (string) wp_remote_retrieve_body( $res ), 'NTAA-OK' );
 	}
 
 	/* ---------------------------------------------------------------
