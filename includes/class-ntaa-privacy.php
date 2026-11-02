@@ -36,31 +36,13 @@ class NTAA_Privacy {
 			$atts,
 			'ntaa_optout'
 		);
-		$id = 'ntaa-optout-' . wp_rand( 1000, 99999 );
+		wp_enqueue_script( 'ntaa-optout', NTAA_URL . 'assets/js/optout.js', array(), NTAA_VERSION, true );
 		ob_start();
 		?>
-		<div class="ntaa-optout" id="<?php echo esc_attr( $id ); ?>" style="border:1px solid #ddd;border-radius:8px;padding:12px 14px;margin:1em 0">
+		<div class="ntaa-optout" data-tracked="<?php echo esc_attr( $a['tracked'] ); ?>" data-not-tracked="<?php echo esc_attr( $a['not_tracked'] ); ?>" style="border:1px solid #ddd;border-radius:8px;padding:12px 14px;margin:1em 0">
 			<p class="ntaa-optout-msg" style="margin:0 0 8px"></p>
 			<label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox"> <span><?php echo esc_html( $a['label'] ); ?></span></label>
 		</div>
-		<script>
-		(function () {
-			var box = document.getElementById(<?php echo wp_json_encode( $id ); ?>);
-			if (!box) return;
-			var cb = box.querySelector('input'), msg = box.querySelector('.ntaa-optout-msg');
-			var t = <?php echo wp_json_encode( $a['tracked'] ); ?>, n = <?php echo wp_json_encode( $a['not_tracked'] ); ?>;
-			function out() { return /(?:^|;\s*)ntaa_optout=1/.test(document.cookie); }
-			function show() { cb.checked = !out(); msg.textContent = out() ? n : t; }
-			cb.addEventListener('change', function () {
-				var secure = location.protocol === 'https:' ? '; Secure' : '';
-				if (cb.checked) { document.cookie = 'ntaa_optout=; path=/; max-age=0; SameSite=Lax' + secure; }
-				else { document.cookie = 'ntaa_optout=1; path=/; max-age=' + (60 * 60 * 24 * 400) + '; SameSite=Lax' + secure; }
-				try { if (!cb.checked) { localStorage.removeItem('ntaa_vid'); } } catch (e) {}
-				show();
-			});
-			show();
-		})();
-		</script>
 		<?php
 		return (string) ob_get_clean();
 	}

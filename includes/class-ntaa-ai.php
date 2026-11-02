@@ -1,6 +1,7 @@
 <?php
 /**
- * AI layer: one interface, three providers (OpenAI, Anthropic Claude, Google Gemini).
+ * AI layer: one interface. Default: the WordPress AI Client (WordPress 7.0+, Settings › Connectors).
+ * Fallback for older WordPress or a separate account: direct connection to OpenAI, Anthropic Claude or Google Gemini.
  * Only aggregated statistics are sent – never IP addresses or raw visitor rows.
  *
  * The free plugin ships one report type ("quick" AI summary). The Pro add-on registers
@@ -307,8 +308,18 @@ class NTAA_AI {
 	 */
 	public static function complete( $system, $messages, $provider = '' ) {
 		$providers = NTAA_Settings::providers();
-		if ( ! $provider || ! isset( $providers[ $provider ] ) ) {
+		$choices   = NTAA_Settings::provider_choices();
+		if ( ! $provider || ! isset( $choices[ $provider ] ) ) {
 			$provider = NTAA_Settings::get( 'ai_provider', 'openai' );
+		}
+		if ( NTAA_Settings::WP_PROVIDER === $provider ) {
+			if ( ! NTAA_Settings::wp_ai_available() ) {
+				return new WP_Error( 'ntaa_no_wp_ai', __( 'The WordPress AI Client is not available on this site. Choose another provider under Analytics AI → Settings → AI.', 'nodethemes-analytics-ai' ), array( 'status' => 400 ) );
+			}
+			return self::wp_client( $system, $messages, (int) NTAA_Settings::get( 'ai_max_tokens', 6000 ) );
+		}
+		if ( ! isset( $providers[ $provider ] ) ) {
+			$provider = 'openai';
 		}
 		$key   = NTAA_Settings::get_api_key( $provider );
 		$model = NTAA_Settings::get( $provider . '_model', $providers[ $provider ]['model'] );
@@ -340,6 +351,57 @@ class NTAA_AI {
 			'provider' => $provider,
 			'model'    => $model,
 		);
+	}
+
+	/**
+	 * Generate text with the WordPress AI Client (WordPress 7.0+).
+	 * The site owner connects the AI provider once under Settings › Connectors.
+	 *
+	 * @param string $system   System prompt.
+	 * @param array  $messages Messages (role + content).
+	 * @param int    $max      Max output tokens.
+	 * @return array|WP_Error
+	 */
+	private static function wp_client( $system, $messages, $max ) {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			return new WP_Error( 'ntaa_no_wp_ai', __( 'The WordPress AI Client is not available on this site. Choose another provider under Analytics AI → Settings → AI.', 'nodethemes-analytics-ai' ), array( 'status' => 400 ) );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 240 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+		}
+		try {
+			$list = array();
+			foreach ( $messages as $m ) {
+				$part   = new \WordPress\AiClient\Messages\DTO\MessagePart( (string) $m['content'] );
+				$list[] = 'assistant' === $m['role']
+					? new \WordPress\AiClient\Messages\DTO\ModelMessage( array( $part ) )
+					: new \WordPress\AiClient\Messages\DTO\UserMessage( array( $part ) );
+			}
+			$builder = wp_ai_client_prompt( $list )
+				->using_system_instruction( $system )
+				->using_max_tokens( max( 500, (int) $max ) )
+				->using_request_options( \WordPress\AiClient\Providers\Http\DTO\RequestOptions::fromArray( array( 'timeout' => 180.0 ) ) );
+
+			if ( ! $builder->is_supported_for_text_generation() ) {
+				return new WP_Error( 'ntaa_no_wp_ai', __( 'No AI provider is connected in WordPress yet. Connect one under Settings → Connectors, or choose another provider under Analytics AI → Settings → AI.', 'nodethemes-analytics-ai' ), array( 'status' => 400 ) );
+			}
+			$result = $builder->generate_text_result();
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+			$text = trim( (string) $result->toText() );
+			if ( '' === $text ) {
+				return new WP_Error( 'ntaa_empty', __( 'The AI provider returned an empty answer.', 'nodethemes-analytics-ai' ), array( 'status' => 502 ) );
+			}
+			return array(
+				'text'     => $text,
+				'provider' => NTAA_Settings::WP_PROVIDER,
+				'model'    => mb_substr( $result->getProviderMetadata()->getId() . '/' . $result->getModelMetadata()->getId(), 0, 100 ),
+			);
+		} catch ( \Throwable $e ) {
+			/* translators: %s: error message */
+			return new WP_Error( 'ntaa_wp_ai', sprintf( __( 'WordPress AI error: %s', 'nodethemes-analytics-ai' ), $e->getMessage() ), array( 'status' => 502 ) );
+		}
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       NodeThemes Analytics AI
  * Description:       Matomo-style website analytics inside WordPress: visitors, pages, sources, campaigns, AI-assistant referrals, devices, GeoIP locations, real-time, visits log, goals, WooCommerce revenue, segments, Web Vitals and more. Cookieless, GDPR-friendly and built for busy sites. Bring your own OpenAI / Claude / Gemini API key for AI summaries.
- * Version:           2.1.5
+ * Version:           2.1.6
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            NodeThemes
@@ -21,7 +21,7 @@ if ( defined( 'NTAA_VERSION' ) ) {
 	return;
 }
 
-define( 'NTAA_VERSION', '2.1.5' );
+define( 'NTAA_VERSION', '2.1.6' );
 define( 'NTAA_DB_VERSION', '2.2' );
 define( 'NTAA_FILE', __FILE__ );
 define( 'NTAA_DIR', plugin_dir_path( __FILE__ ) );

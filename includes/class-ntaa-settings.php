@@ -16,6 +16,56 @@ class NTAA_Settings {
 
 	private static $cache = null;
 
+	/**
+	 * Id of the "WordPress AI Client" provider (WordPress 7.0+, Settings › Connectors).
+	 */
+	const WP_PROVIDER = 'wordpress';
+
+	/**
+	 * Whether the WordPress AI Client (core, 7.0+) can be used on this site.
+	 *
+	 * @return bool
+	 */
+	public static function wp_ai_available() {
+		return function_exists( 'wp_ai_client_prompt' ) && function_exists( 'wp_supports_ai' ) && wp_supports_ai();
+	}
+
+	/**
+	 * Whether the WordPress AI Client has a connected provider that can generate text.
+	 *
+	 * @return bool
+	 */
+	public static function wp_ai_ready() {
+		static $ready = null;
+		if ( null === $ready ) {
+			$ready = false;
+			if ( self::wp_ai_available() ) {
+				try {
+					$ready = (bool) wp_ai_client_prompt( 'test' )->is_supported_for_text_generation();
+				} catch ( \Throwable $e ) {
+					$ready = false;
+				}
+			}
+		}
+		return $ready;
+	}
+
+	/**
+	 * All selectable providers: the WordPress AI Client first (when available), then direct connections.
+	 *
+	 * @return array id => label
+	 */
+	public static function provider_choices() {
+		$out = array();
+		if ( self::wp_ai_available() ) {
+			$out[ self::WP_PROVIDER ] = __( 'WordPress AI (Settings › Connectors)', 'nodethemes-analytics-ai' );
+		}
+		foreach ( self::providers() as $id => $p ) {
+			$out[ $id ] = $p['label'];
+		}
+		return $out;
+	}
+
 	public static function providers() {
 		return array(
 			'openai'    => array(
@@ -99,7 +149,7 @@ class NTAA_Settings {
 			'roles_view'       => array( 'administrator' ),
 			'roles_ai'         => array( 'administrator' ),
 			// AI.
-			'ai_provider'      => 'openai',
+			'ai_provider'      => self::wp_ai_available() ? self::WP_PROVIDER : 'openai',
 			'ai_language'      => 'site',
 			'ai_max_tokens'    => 6000,
 			'ai_custom_note'   => '',
@@ -160,6 +210,9 @@ class NTAA_Settings {
 
 	public static function configured_providers() {
 		$out = array();
+		if ( self::wp_ai_ready() ) {
+			$out[ self::WP_PROVIDER ] = __( 'WordPress AI', 'nodethemes-analytics-ai' );
+		}
 		foreach ( self::providers() as $id => $p ) {
 			if ( self::get_api_key( $id ) !== '' || self::get( $id . '_base' ) ) {
 				$out[ $id ] = $p['label'];
@@ -251,7 +304,8 @@ class NTAA_Settings {
 		}
 
 		$providers          = self::providers();
-		$out['ai_provider'] = isset( $in['ai_provider'], $providers[ $in['ai_provider'] ] ) ? $in['ai_provider'] : 'openai';
+		$choices            = self::provider_choices();
+		$out['ai_provider'] = isset( $in['ai_provider'], $choices[ $in['ai_provider'] ] ) ? $in['ai_provider'] : ( self::wp_ai_available() ? self::WP_PROVIDER : 'openai' );
 		$out['ai_language'] = isset( $in['ai_language'] ) && array_key_exists( $in['ai_language'], self::languages() ) ? $in['ai_language'] : 'site';
 		$out['ai_max_tokens'] = isset( $in['ai_max_tokens'] ) ? max( 500, min( 32000, (int) $in['ai_max_tokens'] ) ) : 6000;
 		$out['ai_custom_note'] = isset( $in['ai_custom_note'] ) ? sanitize_textarea_field( $in['ai_custom_note'] ) : '';

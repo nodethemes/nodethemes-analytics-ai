@@ -30,7 +30,7 @@ class NTAA_Admin {
 	 */
 	public static function menu() {
 		$cap = current_user_can( 'manage_options' ) ? 'manage_options' : NTAA_CAP;
-		add_menu_page( __( 'NodeThemes Analytics AI', 'nodethemes-analytics-ai' ), __( 'Analytics AI', 'nodethemes-analytics-ai' ), $cap, 'ntaa', array( __CLASS__, 'page_dashboard' ), 'dashicons-chart-area', 3 );
+		add_menu_page( __( 'NodeThemes Analytics AI', 'nodethemes-analytics-ai' ), __( 'Analytics AI', 'nodethemes-analytics-ai' ), $cap, 'ntaa', array( __CLASS__, 'page_dashboard' ), 'dashicons-chart-area' );
 		add_submenu_page( 'ntaa', __( 'Analytics dashboard', 'nodethemes-analytics-ai' ), __( 'Dashboard', 'nodethemes-analytics-ai' ), $cap, 'ntaa', array( __CLASS__, 'page_dashboard' ) );
 		if ( current_user_can( 'manage_options' ) || current_user_can( NTAA_CAP_AI ) ) {
 			add_submenu_page( 'ntaa', __( 'AI Insights', 'nodethemes-analytics-ai' ), __( 'AI Insights', 'nodethemes-analytics-ai' ), current_user_can( 'manage_options' ) ? 'manage_options' : NTAA_CAP_AI, 'ntaa-ai', array( __CLASS__, 'page_ai' ) );
@@ -173,6 +173,13 @@ class NTAA_Admin {
 		}
 
 		$providers = array();
+		if ( NTAA_Settings::wp_ai_available() ) {
+			$providers[ NTAA_Settings::WP_PROVIDER ] = array(
+				'label'      => __( 'WordPress AI', 'nodethemes-analytics-ai' ),
+				'model'      => __( 'site default', 'nodethemes-analytics-ai' ),
+				'configured' => NTAA_Settings::wp_ai_ready(),
+			);
+		}
 		foreach ( NTAA_Settings::providers() as $id => $p ) {
 			$providers[ $id ] = array(
 				'label'      => $p['label'],
@@ -613,11 +620,23 @@ class NTAA_Admin {
 								<th scope="row"><label for="ntaa-provider"><?php esc_html_e( 'Default provider', 'nodethemes-analytics-ai' ); ?></label></th>
 								<td>
 									<select id="ntaa-provider" name="<?php echo esc_attr( self::field_name( 'ai_provider' ) ); ?>">
-										<?php foreach ( $providers as $id => $p ) : ?>
-											<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $s['ai_provider'], $id ); ?>><?php echo esc_html( $p['label'] ); ?></option>
+										<?php foreach ( NTAA_Settings::provider_choices() as $id => $label ) : ?>
+											<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $s['ai_provider'], $id ); ?>><?php echo esc_html( $label ); ?></option>
 										<?php endforeach; ?>
 									</select>
 									<p class="description"><?php esc_html_e( 'You can switch provider for each report on the AI Insights page.', 'nodethemes-analytics-ai' ); ?></p>
+									<?php if ( NTAA_Settings::wp_ai_available() ) : ?>
+										<p class="description">
+											<?php
+											if ( NTAA_Settings::wp_ai_ready() ) {
+												esc_html_e( 'Recommended: “WordPress AI” uses the AI service connected for the whole site, so no key is needed here.', 'nodethemes-analytics-ai' );
+											} else {
+												esc_html_e( 'Recommended: “WordPress AI” uses the AI service connected for the whole site. No service is connected yet:', 'nodethemes-analytics-ai' );
+											}
+											?>
+											<a href="<?php echo esc_url( admin_url( 'options-connectors.php' ) ); ?>"><?php esc_html_e( 'Settings › Connectors', 'nodethemes-analytics-ai' ); ?></a>
+										</p>
+									<?php endif; ?>
 								</td>
 							</tr>
 							<tr>
@@ -643,6 +662,14 @@ class NTAA_Admin {
 							</tr>
 						</table>
 
+						<?php if ( NTAA_Settings::wp_ai_available() ) : ?>
+							<p>
+								<button type="button" class="button ntaa-test" data-provider="<?php echo esc_attr( NTAA_Settings::WP_PROVIDER ); ?>"><?php esc_html_e( 'Test WordPress AI connection', 'nodethemes-analytics-ai' ); ?></button>
+								<span class="ntaa-test-result" data-for="<?php echo esc_attr( NTAA_Settings::WP_PROVIDER ); ?>" aria-live="polite"></span>
+							</p>
+							<h3><?php esc_html_e( 'Or connect a provider directly (optional)', 'nodethemes-analytics-ai' ); ?></h3>
+							<p class="description"><?php esc_html_e( 'Only needed if you do not use the WordPress AI connection, or want this plugin to use a separate account.', 'nodethemes-analytics-ai' ); ?></p>
+						<?php endif; ?>
 						<div class="ntaa-providers">
 							<?php foreach ( $providers as $id => $p ) : ?>
 								<?php

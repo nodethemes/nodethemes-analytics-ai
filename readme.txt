@@ -4,11 +4,11 @@ Tags: analytics, statistics, woocommerce analytics, privacy, gdpr
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.5
+Stable tag: 2.1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Privacy-first website analytics inside WordPress: visitors, sources, goals, WooCommerce revenue and AI summaries with your own API key.
+Privacy-first website analytics inside WordPress: visitors, sources, goals, WooCommerce revenue and optional AI summaries.
 
 == Description ==
 
@@ -43,7 +43,7 @@ NodeThemes Analytics AI Pro is a separate add-on plugin sold at [nodethemes.com]
 
 1. Install the plugin from Plugins > Add New Plugin, or upload the zip, and activate it. Tracking starts immediately.
 2. Optional: Analytics AI > Settings > Locations (GeoIP): choose a database and click "Download now" to show countries and cities. Nothing is downloaded until you click this button.
-3. Optional: Analytics AI > Settings > AI: paste your own OpenAI, Anthropic or Google Gemini API key, click "Save settings", then "Test connection".
+3. Optional, for AI summaries: on WordPress 7.0+ connect an AI service under Settings > Connectors and keep "WordPress AI" as the provider. Or, under Analytics AI > Settings > AI, paste your own OpenAI, Anthropic or Google Gemini API key, click "Save settings", then "Test connection".
 4. Analytics AI > Dashboard > Goals > Manage goals: create your first goal.
 5. Busy site? Settings > Performance: turn on High-traffic mode and add a real server cron job.
 
@@ -60,7 +60,9 @@ Tip: keep API keys out of the database by adding define( 'NTAA_OPENAI_KEY', '...
 
 This plugin works without any external service. It only connects to the services below when you turn them on yourself.
 
-= AI providers (only when you add your own API key and click an AI button) =
+= AI providers (only when you click an AI button) =
+
+On WordPress 7.0 and newer the plugin uses the WordPress AI Client by default: the AI service is the one the site owner connected under Settings › Connectors, and that service's terms apply. As an alternative (for older WordPress versions or a separate account) you can add your own API key for one of the providers listed below; the plugin then connects to that provider directly.
 
 When you request an AI summary or test the connection, the plugin sends your site name, site address and language plus aggregated report tables for the chosen period (totals, top pages, site-search terms, referrers, channels, campaigns, devices and countries) to the provider you selected. No individual visits, IP addresses or visitor profiles are sent.
 
@@ -88,12 +90,17 @@ You can also upload your own .mmdb file or switch locations off.
 The tracker is a small script that sends one request per page view. Reports are pre-calculated once a day, and High-traffic mode stores hits in a background queue.
 
 = Do I need an AI key? =
-No. All reports work without AI. The AI summary is optional and uses your own key, so you pay the provider directly.
+No. All reports work without AI. The AI summary is optional. It uses the AI service connected in WordPress (Settings > Connectors) or your own API key, so you pay the provider directly.
 
 = Is it GDPR friendly? =
 It is cookieless by default, never stores IP addresses and keeps the data on your own server. You are still responsible for your own privacy policy.
 
 == Changelog ==
+
+= 2.1.6 =
+* AI: uses the WordPress AI Client (WordPress 7.0+, Settings › Connectors) by default. A direct API key for OpenAI, Anthropic or Gemini stays available as an option.
+* Opt-out shortcode: the script is now loaded with wp_enqueue_script().
+* Admin menu: uses the default menu position.
 
 = 2.1.5 =
 * Plugin header: removed the Plugin URI (it was the same as the Author URI).

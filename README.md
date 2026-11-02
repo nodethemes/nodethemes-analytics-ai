@@ -2,8 +2,9 @@
 
 **Free privacy-first analytics plugin for WordPress and WooCommerce.**
 
-NodeThemes Analytics AI is a free, privacy-first analytics plugin for WordPress, in the style of Matomo, that runs on your own server. It is cookieless by default, never stores IP addresses and can summarise your traffic with your own OpenAI, Claude or Gemini key.
+NodeThemes Analytics AI is a free, privacy-first analytics plugin for WordPress, in the style of Matomo, that runs on your own server. It is cookieless by default, never stores IP addresses and can summarise your traffic with AI: the AI service connected in WordPress (Settings → Connectors, WordPress 7.0+) or your own OpenAI, Claude or Gemini key.
 
+- WordPress.org: [wordpress.org/plugins/nodethemes-analytics-ai](https://wordpress.org/plugins/nodethemes-analytics-ai/)
 - Website: [NodeThemes Analytics AI on nodethemes.com](https://nodethemes.com/product/nodethemes-analytics-ai-pro/)
 - All free plugins: [Free WordPress plugins from NodeThemes](https://nodethemes.com/free-plugins/)
 
@@ -35,8 +36,8 @@ Pro is installed next to the free plugin; your settings and data stay when you u
 
 ## Installation
 
-1. Download the latest version from [nodethemes.com/free-plugins](https://nodethemes.com/free-plugins/). You can also click **Code → Download ZIP** above, but the version on nodethemes.com is ready to upload as it is.
-2. In WordPress go to **Plugins → Add New Plugin → Upload Plugin**, choose the zip and click **Install Now**, then **Activate**.
+1. In WordPress go to **Plugins → Add New Plugin**, search for **NodeThemes Analytics AI** and click **Install Now**, then **Activate**.
+2. Or download the zip from [wordpress.org/plugins/nodethemes-analytics-ai](https://wordpress.org/plugins/nodethemes-analytics-ai/) and upload it under **Plugins → Add New Plugin → Upload Plugin**.
 3. New versions then appear in **Dashboard → Updates** like any other plugin.
 
 Requirements: see the plugin header and `readme.txt`.
